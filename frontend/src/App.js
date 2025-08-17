@@ -7,6 +7,7 @@ import Bins from './pages/Bins';
 import BinHistoryPage from './pages/BinHistory';
 import RoutesPage from './pages/Routes';
 import RoutePlanDetail from './pages/RoutePlanDetail';
+import TrucksPage from './pages/Trucks';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/bins/:id/history" element={<BinHistoryPage />} />
         <Route path="/routes" element={<RoutesPage />} />
         <Route path="/routes/:id" element={<RoutePlanDetail />} />
+        <Route path="/trucks" element={<TrucksPage />} />
       </Routes>
     </Router>
   );

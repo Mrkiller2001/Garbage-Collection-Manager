@@ -7,7 +7,8 @@ const StopSchema = new mongoose.Schema({
     lat: { type: Number, required: true },
     lng: { type: Number, required: true }
   },
-  distanceFromPrevKm: { type: Number, default: 0 }
+  distanceFromPrevKm: { type: Number, default: 0 },
+  servicedAt: { type: Date }
 }, { _id: false });
 
 const RoutePlanSchema = new mongoose.Schema({

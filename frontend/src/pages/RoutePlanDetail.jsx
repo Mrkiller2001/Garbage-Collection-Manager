@@ -28,6 +28,21 @@ export default function RoutePlanDetail() {
     })();
   }, [id, user.token]);
 
+  const markServiced = async (binId) => {
+    try {
+      await axiosInstance.patch(`/api/routes/${id}/stops/${binId}/complete`, {}, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      // reload the plan
+      const { data } = await axiosInstance.get(`/api/routes/${id}`, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setPlan(data);
+    } catch (e) {
+      alert(e?.response?.data?.message || e.message || 'Failed to mark serviced');
+    }
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between mb-4">
@@ -65,6 +80,7 @@ export default function RoutePlanDetail() {
                   <th className="px-4 py-2">Lat</th>
                   <th className="px-4 py-2">Lng</th>
                   <th className="px-4 py-2">Dist from prev (km)</th>
+                  <th className="px-4 py-2 w-40">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -74,7 +90,21 @@ export default function RoutePlanDetail() {
                     <td className="px-4 py-2">{s.name}</td>
                     <td className="px-4 py-2">{s.location?.lat}</td>
                     <td className="px-4 py-2">{s.location?.lng}</td>
-                    <td className="px-4 py-2">{(s.distanceFromPrevKm ?? 0).toFixed?.(3) ?? s.distanceFromPrevKm}</td>
+                    <td className="px-4 py-2">{(s.distanceFromPrevKm ?? 0).toFixed?.(3) ?? s.distanceFromPrevKm}
+                    <div className="mt-1 text-xs text-gray-500">
+                        {s.servicedAt ? `Serviced: ${new Date(s.servicedAt).toLocaleString()}` : 'Pending'}
+                    </div>
+                    </td>
+                    <td className="px-4 py-2">
+                    {!s.servicedAt && (
+                        <button
+                        onClick={() => markServiced(s.binId)}
+                        className="px-3 py-1 rounded border hover:bg-gray-50"
+                        >
+                        Mark serviced
+                        </button>
+                    )}
+                    </td>
                   </tr>
                 ))}
                 {!plan.stops?.length && (

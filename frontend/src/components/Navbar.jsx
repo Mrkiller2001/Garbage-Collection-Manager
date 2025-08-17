@@ -35,6 +35,7 @@ const Navbar = () => {
             <NavItem to="/bins">Bins</NavItem>
             <NavItem to="/routes">Routes</NavItem>
             <NavItem to="/profile">Profile</NavItem>
+            <NavItem to="/trucks" className="mr-4">Trucks</NavItem>
             <button
               onClick={handleLogout}
               className="ml-2 bg-red-500 px-4 py-2 rounded hover:bg-red-700"

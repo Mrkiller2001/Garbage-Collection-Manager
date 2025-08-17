@@ -113,4 +113,45 @@ const deleteRoutePlan = async (req, res) => {
   }
 };
 
-module.exports = { createRoutePlan, listRoutePlans, getRoutePlan, deleteRoutePlan };
+// PATCH /api/routes/:id/stops/:binId/complete
+const completeStop = async (req, res) => {
+  const userId = req.user?.id || req.user?._id?.toString();
+  const { id: routeId, binId } = req.params;
+
+  try {
+    const plan = await RoutePlan.findOne({ _id: routeId, userId });
+    if (!plan) return res.status(404).json({ message: 'Route plan not found' });
+
+    const stop = plan.stops.find(s => String(s.binId) === String(binId));
+    if (!stop) return res.status(404).json({ message: 'Stop not found in this route' });
+
+    // idempotent: if already serviced, just return the plan
+    if (!stop.servicedAt) {
+      stop.servicedAt = new Date();
+
+      // reset bin snapshot
+      const bin = await Bin.findOne({ _id: binId, userId });
+      if (bin) {
+        bin.latestFillPct = 0;
+        bin.status = 'normal';
+        bin.latestReadingAt = new Date();
+        await bin.save();
+      }
+
+      // complete route if all stops serviced
+      const allDone = plan.stops.every(s => !!s.servicedAt);
+      if (allDone) {
+        plan.status = 'completed';
+        // plan.completedAt = new Date(); // (optional if you added the field)
+      }
+
+      await plan.save();
+    }
+
+    res.json(plan);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { createRoutePlan, listRoutePlans, getRoutePlan, deleteRoutePlan, completeStop };
