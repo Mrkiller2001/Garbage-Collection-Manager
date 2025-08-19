@@ -33,6 +33,7 @@ const Navbar = () => {
         {user ? (
           <>
             <NavItem to="/bins">Bins</NavItem>
+            <NavItem to="/routes">Routes</NavItem>
             <NavItem to="/profile">Profile</NavItem>
             <button
               onClick={handleLogout}

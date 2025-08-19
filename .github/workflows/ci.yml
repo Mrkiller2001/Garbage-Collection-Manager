@@ -5,6 +5,7 @@ on:
     branches:
       - main  # Trigger CI on pushes to the main branch
 
+
 jobs:
   test:
     name: Run Tests
@@ -14,88 +15,66 @@ jobs:
       matrix:
         node-version: [22] # Test on multiple Node.js versions
 
+
     environment: MONGO_URI
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      # Set up Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
+    # Set up Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
 
-      # Trim runner logs early to avoid "No space left on device" from _diag
-      - name: Trim runner logs (safe)
-        run: |
-          RUNNER_DIR=/home/ubuntu/www/actions-runner
-          sudo truncate -s 0 "$RUNNER_DIR/_diag/"*.log 2>/dev/null || true
-          sudo find "$RUNNER_DIR/_diag" -type f -name '*.log' -mtime +7 -delete 2>/dev/null || true
-          df -h
+    - name: Print Env Secret
 
-      # (Removed: printing secrets to logs)
+      env:
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        PORT: ${{ secrets.PORT }}
+      run: | 
+        echo "Secret 1 is: $MONGO_URI"
+        echo "Secret 2 is: $JWT_SECRET"
+        echo "Secret 3 is: $PORT"
+      
+    - run: pm2 stop all
 
-      - run: pm2 stop all || true
+    # Install dependencies for backend
+    - name: Install Backend Dependencies
+      working-directory: ./backend
+      run: | 
+       npm install --global yarn
+       yarn --version
+       yarn install
+      
+    # Install dependencies for frontend
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: |
+        df -h
+        sudo rm -rf ./build
+        yarn install
+        yarn run build
 
-      # Install dependencies for backend (keep Yarn as you had it)
-      - name: Install Backend Dependencies
-        working-directory: ./backend
-        run: |
-          npm install --global yarn
-          yarn --version
-          yarn install
 
-      # Install dependencies for frontend
-      - name: Install Frontend Dependencies
-        working-directory: ./frontend
-        run: |
-          df -h
-          sudo rm -rf ./build
-          yarn install
-          yarn run build
+    # Run backend tests
+    - name: Run Backend Tests
+      env:
+        MONGO_URI: ${{ secrets.MONGO_URI }}
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        PORT: ${{ secrets.PORT }}
+      working-directory: ./backend
+      run: npm test
 
-      # Run backend tests
-      - name: Run Backend Tests
-        env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          PORT: ${{ secrets.PORT }}
-        working-directory: ./backend
-        run: npm test
 
-      # (Removed: stray "npm ci" at repo root)
+    - run: npm ci
+    - run: | 
+        cd ./backend
+        touch .env
+        echo "${{ secrets.PROD }}" > .env
 
-      - name: Create backend .env
-        working-directory: ./backend
-        run: |
-          touch .env
-          printf '%s\n' "${{ secrets.PROD }}" > .env
+    - run: pm2 start all
 
-      - run: pm2 start all || true
-      - run: pm2 restart all || true
-
-      # ---- SAFE CLEANUP FOR SELF-HOSTED RUNNER ----
-      - name: Cleanup caches & logs (keep live build)
-        if: always()
-        env:
-          RUNNER_TEMP: ${{ runner.temp }}
-          RUNNER_TOOL_CACHE: ${{ runner.tool_cache }}
-        run: |
-          # Don't delete frontend/build or node_modules if your app serves from workspace
-          # Clean package manager caches
-          yarn cache clean || true
-          rm -rf ~/.cache/yarn ~/.yarn || true
-          npm cache clean --force || true
-
-          # Tidy GitHub runner temp/cache (older files only)
-          if [ -n "${RUNNER_TEMP:-}" ] && [ -d "$RUNNER_TEMP" ]; then
-            find "$RUNNER_TEMP" -mindepth 1 -mtime +3 -print -exec rm -rf {} + || true
-          fi
-          if [ -n "${RUNNER_TOOL_CACHE:-}" ] && [ -d "$RUNNER_TOOL_CACHE" ]; then
-            find "$RUNNER_TOOL_CACHE" -mindepth 1 -maxdepth 1 -mtime +14 -print -exec rm -rf {} + || true
-          fi
-
-          # PM2 logs can balloon
-          pm2 flush || true
-          df -h
+    - run: pm2 restart all

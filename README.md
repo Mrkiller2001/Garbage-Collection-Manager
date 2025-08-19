@@ -1,94 +1,268 @@
+# Smart Waste Collection – IoT + Route Optimization
 
-**Assessment 1 (Total Marks **20**)**
-
-Assignment: **Software requirements analysis and design (**Full-Stack CRUD Application Development with DevOps Practices**)**
-
-
----
-
-**Objective**
-
-You have been provided with a starter project that includes user authentication using Node.js, React.js, and MongoDB. Your task is to extend this application by implementing CRUD (Create, Read, Update, Delete) operations of different featuresfor a real-world application of your choice, while following industry best practices such as: 
-
-* **Project Management with JIRA**
-* **Requirement Diagram**, **Block Definition Diagram (**BDD), Parametric Diagram using**SysML**
-* **Version Control using GitHub**
-* **CI/CD Integration for Automated Deployment**
+An end-to-end system to monitor public waste bin fill levels with IoT sensors, schedule pickups, and generate optimized truck routes.
+Tech: **Node/Express + MongoDB + JWT** (backend) and **React + Tailwind** (frontend).
 
 ---
 
-**GitHub link of the starter project: **[https://github.com/rajuiit/sdlapps](https://github.com/rajuiit/sdlapps)
+## Public URLs (Production)
+ http://https://3.107.185.222
+
+**Project demo account (for graders):**
+
+* **Email:** `stealth959@hotmail.co`
+* **Password:** `1234`
+
+> If the demo account doesn’t exist in your DB yet, you can create it via the app’s **Register** page or the API (see “Quick Start → Create a user”).
 
 ---
 
-**Requirement**
+## Features
 
-1. **Choose a Real-World Application**
-
-We will send you an email to choose a Real-World project. If you face any difficulties in choosing your project, please contact your tutor.
-
-2. **Project Design with SysML and Project Management with JIRA**
-
-* Draw a requirements diagram, Block Definition Diagram (BDD), and Parametric Diagram based on your project (Connect all functional features).
-* Create a JIRA project and define:
-  * Epic
-  * User Stories (features required in your app)
-  * Child issues or Subtasks (breaking down development work)
-  * Sprint Implementation (organizing work into milestones)
-* Provide your JIRA board URL in the project README.
-
-**3. Backend Development (Node.js + Express + MongoDB)**
-
-* Set up and configure the MongoDB database connection.
-* Implement various backend functions for handling application data.Ensure that all functions are compatible with an Application Programming Interface (API) structure(Follow existing patterns used in the Task Manager App where applicable).
-* Implement CRUD operations forcreating, reading, updating, and deleting records for each functionality.
-
-4. **Frontend Development (React.js)**
-
-* Create a user-friendly interface to interact with your API endpoint (Follow task manager app).
-* Implement different forms for adding, updating, and deleting records.
-* Display data using tables, cards, or lists (Follow how we showed data in task manager app, try to implement better visualization for the frontend.)
-
-**5. Authentication & Authorization** (Prerequisite Task)
-
-* Ensure only authenticated users can access and perform CRUD operations. (Already developed in your project)
-* Use JWT (JSON Web Tokens) for user authentication (Use the task manager one from .env file).
-
-**6. GitHub Version Control & Branching Strategy**
-
-* Use GitHub for version control and maintain:
-* main branch (stable production-ready code)
-* Feature branches for each new feature
-* Follow proper commit messages and pull request (PR) for code reviews.
-
-**7. CI/CD Pipeline Setup**
-
-* Implement a CI/CD pipeline using GitHub Actions to:
-* Automatically run tests on every commit/pull request (Optional).
-* Deploy the backend to AWS. (Use the QUT provided EC2 instance)
-* Deploy the frontend to AWS.
-* Document your CI/CD workflow in the README.
+* **Auth**: Register/Login with JWT (protected APIs)
+* **Bins**: CRUD bins; filter by type/status; latest fill snapshot
+* **Sensor Readings**: Post readings to update bin snapshot & status
+* **Routes**: Generate optimized pickup routes (nearest-neighbor + 2-opt), view details, complete stops, auto-reset bins, auto-complete route
+* **Trucks**: CRUD trucks; assign/unassign trucks to routes; auto free truck when route completes
 
 ---
 
-**Submission Requirements**
+## Project Structure
 
-**A report **contains** the following (Provide screenshots as evidence for each implemented task. **The screenshot should **contain** your username** from JIRA, GITHUB, and AWS**):
-
-* **JIRA Project **Management**(Provide screenshots in the **report o**f at least two epics**, **including user story, sub**t**a**sks**. **Please **don’t** provide **the **U**ser Authentication** epic**.**Provide your JIRA Board URL in the report and README file as well.**Through the JIRA Board, we will systematically review the completeness of the project features, organised under Epics, User Stories, and Sub-tasks.**
-* Requirement diagram, Block Definition Diagram (BDD), Parametric Diagram (Using project features).
-* **GitHub Repository (backend/ and frontend/)** link. We will **review** your code implementation, which you followed from the task description. We will also **review** your commits, main branch, feature branches, and pull requests. **(**Please note that the authorisation** (Log In, Registration)** is the prerequisite for backend development.**)**
-* CI/CD pipeline details step by step screenshot.
-* README.md with:
-* Project setup instructions.
-* Public URL of your project.
-* Provide a project-specific username and password if we need to access your dashboard.
+```
+root/
+├─ backend/
+│  ├─ server.js
+│  ├─ config/db.js
+│  ├─ models/ (User, Bin, SensorReading, RoutePlan, Truck)
+│  ├─ controllers/ (auth, bins, sensor, routePlan, truck)
+│  ├─ routes/ (authRoutes, bins, sensorRoutes, routePlanRoutes, truckRoutes)
+│  └─ test/ (Mocha/Chai/Sinon unit tests)
+└─ frontend/
+   ├─ src/
+   │  ├─ pages/ (Login, Tasks, Bins, BinHistory, Routes, RoutePlanDetail, Trucks)
+   │  ├─ components/ (forms & lists)
+   │  ├─ context/AuthContext.jsx
+   │  └─ axiosConfig.js
+   └─ public/
+```
 
 ---
 
-**Assessment Criteria:**
+## Requirements
 
-* Clarity and completeness of Jira board and SysML models.
-* Adherence to Git best practices and practical contributions.
-* Successful implementation, deploymentand CI/CD pipeline.
-* Problem-solving skills and the ability to go beyond basic requirements.
+* **Node.js** ≥ 18 (tested with **v22.x**)
+* **MongoDB** (Atlas or local)
+* **npm** or **yarn**
+
+---
+
+## Setup: Backend
+
+```bash
+cd backend
+npm install
+# or: yarn
+```
+
+Create **.env** in `backend/`:
+
+```
+MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority
+JWT_SECRET=supersecret
+PORT=5001
+```
+
+Start the API:
+
+```bash
+npm start         # node server.js
+# or if you have nodemon:
+npm run dev
+```
+
+Run tests:
+
+```bash
+npm test
+```
+
+---
+
+## Setup: Frontend
+
+```bash
+cd frontend
+npm install
+# or: yarn
+```
+
+Confirm **API base URL** in `frontend/src/axiosConfig.js` (example):
+
+```js
+import axios from 'axios';
+
+// In dev, CRA proxy may be used; otherwise set baseURL:
+const axiosInstance = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE || 'http://localhost:5001',
+});
+export default axiosInstance;
+```
+
+(Optional) create `.env` in `frontend/`:
+
+```
+REACT_APP_API_BASE=http://localhost:5001
+```
+
+Start the UI:
+
+```bash
+npm start
+# visit http://localhost:3000
+```
+
+Build:
+
+```bash
+npm run build
+```
+
+---
+
+## Quick Start (local)
+
+### 1) Create a user (or use demo credentials)
+
+**Via UI:** go to **/register** and sign up
+**Via API:**
+
+```bash
+curl -X POST http://localhost:5001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Demo","email":"demo@smartwaste.app","password":"Password123!"}'
+```
+
+Login to get a JWT:
+
+```bash
+curl -X POST http://localhost:5001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@smartwaste.app","password":"Password123!"}'
+```
+
+### 2) Create a bin
+
+```bash
+curl -X POST http://localhost:5001/api/bins \
+  -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
+  -d '{
+    "name":"King & Ann",
+    "type":"general",
+    "capacityLitres":240,
+    "location":{"lat":-27.4699,"lng":153.0251},
+    "installedAt":"2024-01-15"
+  }'
+```
+
+### 3) Post a sensor reading (mark as “needs\_pickup” if ≥80)
+
+```bash
+curl -X POST http://localhost:5001/api/sensor-readings \
+  -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
+  -d '{"binId":"<BIN_ID>","fillPct":85,"batteryPct":60}'
+```
+
+### 4) (Optional) Create a truck
+
+```bash
+curl -X POST http://localhost:5001/api/trucks \
+  -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
+  -d '{"name":"Truck 12","plateNumber":"ABC-123","capacityLitres":5000,"fuelType":"diesel"}'
+```
+
+### 5) Generate a route
+
+```bash
+curl -X POST http://localhost:5001/api/routes \
+  -H "Authorization: Bearer <JWT>" -H "Content-Type: application/json" \
+  -d '{
+    "depot":{"lat":-27.4699,"lng":153.0251},
+    "threshold":80,
+    "maxStops":10,
+    "truckId":"<TRUCK_ID or omit>"
+  }'
+```
+
+### 6) Complete a stop (auto-resets bin to 0%)
+
+```bash
+curl -X PATCH http://localhost:5001/api/routes/<ROUTE_ID>/stops/<BIN_ID>/complete \
+  -H "Authorization: Bearer <JWT>"
+```
+
+---
+
+## Core Endpoints (summary)
+
+* **Auth**
+
+  * `POST /api/auth/register` — create user
+  * `POST /api/auth/login` — login, returns JWT
+* **Bins**
+
+  * `GET /api/bins` — list (filters: `type`, `status`)
+  * `POST /api/bins` — create
+  * `GET /api/bins/:id` — get one
+  * `PUT /api/bins/:id` — update
+  * `DELETE /api/bins/:id` — delete
+  * `GET /api/bins/latest` — latest snapshots
+* **Sensor Readings**
+
+  * `POST /api/sensor-readings` — add reading `{ binId, fillPct, batteryPct? }`
+  * `GET /api/sensor-readings/bin/:id` — history for one bin
+* **Routes**
+
+  * `POST /api/routes` — generate optimized route `{ depot, threshold?, maxStops?, truckId? }`
+  * `GET /api/routes` — list
+  * `GET /api/routes/:id` — detail
+  * `DELETE /api/routes/:id` — delete
+  * `PATCH /api/routes/:id/stops/:binId/complete` — mark stop serviced (auto-reset bin; complete route if all done)
+  * `PATCH /api/routes/:id/assign-truck` — `{ truckId }` or `{ truckId:null }`
+* **Trucks**
+
+  * `GET /api/trucks` — list (filters: `status`, `minCapacity`, `q`)
+  * `POST /api/trucks` — create
+  * `GET /api/trucks/:id` — get one
+  * `PUT /api/trucks/:id` — update
+  * `DELETE /api/trucks/:id` — delete
+
+> All non-auth endpoints require `Authorization: Bearer <JWT>`.
+
+---
+
+## Frontend Navigation
+
+* **/login** — authenticate
+* **/tasks** — (template CRUD page from starter)
+* **/bins** — manage bins; simulate fill; view latest snapshot
+* **/bins/\:id/history** — line chart + table of readings
+* **/routes** — create & list routes
+* **/routes/\:id** — route detail; complete stops; assign/unassign truck
+* **/trucks** — manage trucks
+
+---
+
+## CI
+
+A GitHub Actions workflow (`Backend CI`) installs deps, runs backend tests (Mocha), and builds the frontend. It expects `MONGO_URI`, `JWT_SECRET`, `PORT` in repository secrets.
+
+---
+
+## Notes / Troubleshooting
+
+* **401 Unauthorized** → ensure JWT header is set.
+* **404** on routes/sensor endpoints → confirm routes are mounted in `server.js`.
+* **React/Recharts hook error** → ensure only one `react`/`react-dom` version (run `npm ls react react-dom` in `frontend`).
+* For production, set `REACT_APP_API_BASE` to your deployed API base.
+
